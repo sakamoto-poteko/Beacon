@@ -5,9 +5,7 @@ using System.Net.NetworkInformation;
 
 namespace Beacon
 {
-    public record NicIpInfo(string Id, string NicName, IEnumerable<IPAddress> Address);
-
-    public sealed class IpRetrivingService : IIpRetrivingService
+    public class IpRetrivingService : IIpRetrivingService
     {
         public event Action<IList<NicIpInfo>> IpAddressChanged;
 
