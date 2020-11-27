@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Beacon.Common;
@@ -21,13 +19,13 @@ namespace BeaconServer
             [Table(HostIpDataEntity.TableName, Connection = "AzureWebJobsStorage")] CloudTable cloudTable,
             ClaimsPrincipal principal, ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogTrace($"IP update request received");
 
             var userIdClaim = principal?.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier");
             var userId = userIdClaim?.Value;
             if (string.IsNullOrWhiteSpace(userId))
             {
-                log.LogError($"request has invalid userId: {userId}");
+                log.LogError("request has invalid userId {UserId}", userId);
                 return new UnauthorizedResult();
             }
 
@@ -36,6 +34,7 @@ namespace BeaconServer
 
             if (!isValid)
             {
+                log.LogTrace($"IP update request has invalid model");
                 return new BadRequestObjectResult(validationResult);
             }
 
@@ -62,10 +61,9 @@ namespace BeaconServer
                 throw;
             }
 
-            var c = principal.Claims.Select(x => new { x.Type, x.Value });
-            return new OkObjectResult(new { Claims = c, UserId = userId });
+            log.LogTrace("successfully updated IP for computer {ComputerName}, {Entries} entries updated", model.ComputerName, model.NicIp.Count);
 
-            //return new OkResult();
+            return new OkResult();
         }
     }
 }
