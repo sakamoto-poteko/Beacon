@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.Identity.Client" Version="4.23.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Beacon.Common\Beacon.Common.csproj" />
+  </ItemGroup>
+
 </Project>

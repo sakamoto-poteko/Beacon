@@ -8,6 +8,8 @@ namespace Beacon
 {
     public interface IIpUploadingService
     {
+        public Task SendIpAsync();
+
         public Task SendIpAsync(string computerName, IList<NicIpInfo> nicIpInfo);
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace Beacon
 {
@@ -31,7 +32,7 @@ namespace Beacon
                 {
                     foreach (UnicastIPAddressInformation ip in networkInterface.GetIPProperties().UnicastAddresses)
                     {
-                        if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork || ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
                         {
                             ipList.Add(ip.Address);
                         }
@@ -40,7 +41,7 @@ namespace Beacon
 
                 if (ipList.Count > 0)
                 {
-                    NicIpInfo info = new NicIpInfo(networkInterface.Id, networkInterface.Name, new List<IPAddress>());
+                    NicIpInfo info = new NicIpInfo(networkInterface.Id, networkInterface.Name, ipList);
                     infoList.Add(info);
                 }
             }

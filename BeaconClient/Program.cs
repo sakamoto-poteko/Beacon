@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using BeaconClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,7 +36,7 @@ namespace Beacon
                     })
                     .ConfigureServices((ctx, services) =>
                     {
-                        ConfigureServices(services);
+                        ConfigureServices(services, authResult.IdToken);
                     })
                     .ConfigureLogging((ctx, loggingBuilder) =>
                     {
@@ -44,9 +47,16 @@ namespace Beacon
             await builder.RunConsoleAsync();
         }
 
-        private static void ConfigureServices(IServiceCollection services)
+        private static void ConfigureServices(IServiceCollection services, string token)
         {
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            services.AddSingleton<HttpClient>(httpClient);
             services.AddSingleton<IIpRetrivingService, IpRetrivingService>();
+            services.AddSingleton<IIpUploadingService, IpUploadingService>();
+            services.AddSingleton<IpUploadingScheduler>();
+            services.AddSingleton<IIpUploadingScheduler>(sp => sp.GetService<IpUploadingScheduler>());
+            services.AddHostedService<IpUploadingScheduler>(sp => sp.GetService<IpUploadingScheduler>());
         }
     }
 }
