@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Client", "BeaconClient\Beacon.Client.csproj", "{24909A6C-0F80-4DCD-A983-E2A56B4FBEFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Client", "Beacon.Client\Beacon.Client.csproj", "{24909A6C-0F80-4DCD-A983-E2A56B4FBEFC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Server", "BeaconServer\Beacon.Server.csproj", "{0F80A81B-577A-4912-9CD6-9440C8082982}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Server", "Beacon.Server\Beacon.Server.csproj", "{0F80A81B-577A-4912-9CD6-9440C8082982}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Common", "Beacon.Common\Beacon.Common.csproj", "{16EC8ECD-34BE-493F-AD2E-67BEBE8EF44F}"
 EndProject

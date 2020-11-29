@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BeaconClient\Beacon.Client.csproj" />
+    <ProjectReference Include="..\Beacon.Client\Beacon.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
