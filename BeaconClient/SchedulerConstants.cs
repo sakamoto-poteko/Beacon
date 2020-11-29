@@ -1,4 +1,4 @@
-﻿namespace BeaconClient
+﻿namespace Beacon.Client
 {
     public static class IpUploadSchedulerConstants
     {

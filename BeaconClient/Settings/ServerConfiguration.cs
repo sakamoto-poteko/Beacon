@@ -1,4 +1,4 @@
-﻿namespace BeaconClient.Settings
+﻿namespace Beacon.Client.Settings
 {
     public class ServerConfiguration
     {

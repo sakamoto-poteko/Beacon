@@ -1,30 +1,17 @@
 ﻿using System;
 using System.Net.Http;
-using BeaconClient.Settings;
+using Beacon.Client.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Quartz;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
-    class Program
+    public class DefaultStartup
     {
-        private const string MSATenant = "9188040d-6c67-4c5b-b112-36a304b66dad";
-
-        static void Main(string[] args)
+        protected virtual void ConfigureQuartz(HostBuilderContext context, IServiceCollection services)
         {
-            IHost host = CreateHostBuilder(args).Build();
-            host.Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args).ConfigureServices(ConfigureServices);
-
-        private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
-        {
-            services.AddMsalClient("4c975b25-5425-4c0c-a209-2690835c1260", MSATenant);
-
             services.AddQuartz(config =>
             {
                 config.SchedulerName = IpUploadSchedulerConstants.SchedulerId;
@@ -40,11 +27,15 @@ namespace BeaconClient
                 });
             });
             services.AddQuartzHostedService();
+        }
 
+        protected virtual void ConfigureAuthorizedHttpClient(HostBuilderContext context, IServiceCollection services)
+        {
             var serverConfiguration = new ServerConfiguration();
             context.Configuration.GetSection("ServerConfiguration").Bind(serverConfiguration);
-
-            services.AddSingleton<HttpClient>(sp =>
+            services.AddSingleton<AuthorizedHttpHandler>();
+            services.AddSingleton<IAuthorizationTokenManager, AuthorizationTokenManager>();
+            services.AddSingleton(sp =>
             {
                 var httpMessageHandler = sp.GetService<AuthorizedHttpHandler>();
                 var httpClient = new HttpClient(httpMessageHandler)
@@ -52,25 +43,44 @@ namespace BeaconClient
                     BaseAddress = new Uri(serverConfiguration.Endpoint)
                 };
 
-                httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("BeaconClient", "1.0.0"));
+                // TODO: version info
+                httpClient.DefaultRequestHeaders.UserAgent.Add(
+                    new System.Net.Http.Headers.ProductInfoHeaderValue("BeaconClient", "1.0.0"));
 
                 return httpClient;
             });
+        }
+
+        protected virtual void ConfigureOneTimeConfigureService(HostBuilderContext context, IServiceCollection services)
+        {
+            services.AddHostedService<OneTimeConfigureService>();
+        }
+
+        public virtual void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+        {
+            services.AddMsalClient("4c975b25-5425-4c0c-a209-2690835c1260", AuthorizationConstants.MsaTenant);
+
+            ConfigureQuartz(context, services);
+
+            ConfigureAuthorizedHttpClient(context, services);
 
             services.AddOptions<ServerConfiguration>("ServerConfiguration");
             // TODO: add validator
 
-            services.AddSingleton<AuthorizedHttpHandler>();
-            services.AddSingleton<IAuthorizationTokenManager, AuthorizationTokenManager>();
-            services.AddSingleton<IIpRetrivingService, IpRetrivingService>();
+            services.AddSingleton<IIpRetrievingService, IpRetrievingService>();
             services.AddSingleton<IIpUploadingService, IpUploadingService>();
             services.AddSingleton<IIpUploadingScheduler, IpUploadingScheduler>();
 
             services.AddTransient<IpUploadingJob>();
 
-            services.AddHostedService<OneTimeConfigureService>();
+            ConfigureOneTimeConfigureService(context, services);
 
             services.AddLogging();
         }
-    }
+
+        public virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
+        {
+
+        }
+     }
 }

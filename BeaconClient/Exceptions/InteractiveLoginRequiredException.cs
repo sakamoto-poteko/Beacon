@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace BeaconClient.Exceptions
+namespace Beacon.Client.Exceptions
 {
     [Serializable]
     internal class InteractiveLoginRequiredException : AuthorizationTokenException

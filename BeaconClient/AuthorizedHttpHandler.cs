@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
     public class AuthorizedHttpHandler : HttpClientHandler
     {
@@ -12,11 +12,6 @@ namespace BeaconClient
         public AuthorizedHttpHandler(IAuthorizationTokenManager authorizationTokenManager)
         {
             this.authorizationTokenManager = authorizationTokenManager;
-        }
-
-        protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            throw new InvalidOperationException();
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

@@ -2,13 +2,11 @@
 using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json;
 
-namespace BeaconServer
+namespace Beacon.Server
 {
     public class HostIpDataEntity : TableEntity
     {
         public const string TableName = "HostIpMap";
-
-        public string Id { get; set; }
 
         public string Name { get; set; }
 
@@ -19,15 +17,9 @@ namespace BeaconServer
         [IgnoreProperty]
         public IList<string> Addresses
         {
-            get
-            {
-                return DeserializeAddresses(AddressesList);
-            }
+            get => DeserializeAddresses(AddressesList);
 
-            set
-            {
-                AddressesList = SerializeAddress(value);
-            }
+            set => AddressesList = SerializeAddress(value);
         }
 
         public string AddressesList { get; set; }

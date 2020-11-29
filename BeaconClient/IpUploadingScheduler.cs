@@ -1,6 +1,6 @@
 ﻿using Quartz;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
     public class IpUploadingScheduler : IIpUploadingScheduler
     {

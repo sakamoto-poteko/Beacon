@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using Microsoft.Identity.Client;
 
-namespace BeaconClient.Exceptions
+namespace Beacon.Client.Exceptions
 {
     [Serializable]
     internal class AuthorizationTokenException : Exception

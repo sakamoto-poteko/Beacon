@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BeaconClient.Exceptions;
+using Beacon.Client.Exceptions;
 using Microsoft.Identity.Client;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
     public class AuthorizationTokenManager : IAuthorizationTokenManager
     {
         private readonly IPublicClientApplication publicClientApplication;
-        private readonly List<string> _scopes = new List<string>();
+        private readonly List<string> scopes = new List<string>();
 
         public AuthorizationTokenManager(IPublicClientApplication publicClientApplication)
         {
@@ -18,16 +18,16 @@ namespace BeaconClient
 
         public bool AllowInteractiveLogin { get; set; }
 
-        public IEnumerable<string> Scopes => _scopes;
+        public IEnumerable<string> Scopes => scopes;
 
         public void AddScope(string scope)
         {
-            _scopes.Add(scope);
+            scopes.Add(scope);
         }
 
         public void RemoveScope(string scope)
         {
-            _scopes.Remove(scope);
+            scopes.Remove(scope);
         }
 
         public async Task<string> GetTokenAsync()
@@ -36,10 +36,11 @@ namespace BeaconClient
             try
             {
                 var accounts = await publicClientApplication.GetAccountsAsync();
+                var msaAccount = accounts.FirstOrDefault(account => account.HomeAccountId.TenantId == AuthorizationConstants.MsaTenant);
 
                 try
                 {
-                    result = await publicClientApplication.AcquireTokenSilent(new[] { "" }, accounts.FirstOrDefault()).ExecuteAsync();
+                    result = await publicClientApplication.AcquireTokenSilent(Scopes, msaAccount).ExecuteAsync();
                 }
                 catch (MsalUiRequiredException)
                 {
@@ -48,7 +49,7 @@ namespace BeaconClient
                         throw new InteractiveLoginRequiredException("An interactive login is required for this authorization");
                     }
 
-                    result = await publicClientApplication.AcquireTokenInteractive(new[] { "" }).ExecuteAsync();
+                    result = await publicClientApplication.AcquireTokenInteractive(Scopes).WithAccount(msaAccount).ExecuteAsync();
                 }
             }
             catch (MsalException exception)

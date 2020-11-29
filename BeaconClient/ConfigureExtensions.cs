@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
     public static class ConfigureExtensions
     {

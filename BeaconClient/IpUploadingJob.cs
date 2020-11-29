@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Quartz;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
     [DisallowConcurrentExecution]
     public class IpUploadingJob : IJob

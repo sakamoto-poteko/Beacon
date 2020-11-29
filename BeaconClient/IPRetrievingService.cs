@@ -3,24 +3,28 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
-    public class IpRetrivingService : IIpRetrivingService
+    public class IpRetrievingService : IIpRetrievingService
     {
+        private readonly ILogger<IpRetrievingService> logger;
         public event Action<IList<NicIpInfo>> IpAddressChanged;
 
-        public IpRetrivingService()
+        public IpRetrievingService(ILogger<IpRetrievingService> logger)
         {
+            this.logger = logger;
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
         }
 
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
-            IpAddressChanged?.Invoke(GetIpForAllNics());
+            logger.LogInformation("IP address has changed in this computer");
+            IpAddressChanged?.Invoke(GetIpForAllInterfaces());
         }
 
-        public IList<NicIpInfo> GetIpForAllNics()
+        public IList<NicIpInfo> GetIpForAllInterfaces()
         {
             List<NicIpInfo> infoList = new List<NicIpInfo>();
 
@@ -41,7 +45,13 @@ namespace BeaconClient
 
                 if (ipList.Count > 0)
                 {
-                    NicIpInfo info = new NicIpInfo(networkInterface.Id, networkInterface.Name, ipList);
+                    NicIpInfo info = new NicIpInfo
+                    {
+                        Id = networkInterface.Id,
+                        NicName = networkInterface.Name,
+                        Address = ipList
+                    };
+
                     infoList.Add(info);
                 }
             }

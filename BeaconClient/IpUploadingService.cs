@@ -2,29 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
+using Beacon.Client.Exceptions;
 using Beacon.Common;
-using BeaconClient.Exceptions;
-using BeaconClient.Settings;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
-namespace BeaconClient
+namespace Beacon.Client
 {
     public class IpUploadingService : IIpUploadingService
     {
         private readonly HttpClient httpClient;
-        private readonly IIpRetrivingService ipRetrivingService;
+        private readonly IIpRetrievingService ipRetrievingService;
         private readonly ILogger<IpUploadingService> logger;
         private readonly string computerName;
 
-        public IpUploadingService(HttpClient httpClient, IIpRetrivingService ipRetrivingService, ILogger<IpUploadingService> logger)
+        public IpUploadingService(HttpClient httpClient, IIpRetrievingService ipRetrievingService, ILogger<IpUploadingService> logger)
         {
             this.httpClient = httpClient;
-            this.ipRetrivingService = ipRetrivingService;
+            this.ipRetrievingService = ipRetrievingService;
             this.logger = logger;
-            this.ipRetrivingService.IpAddressChanged += IpRetrivingService_IpAddressChanged;
+            this.ipRetrievingService.IpAddressChanged += IpRetrievingService_IpAddressChanged;
 
             computerName = Environment.MachineName;
             logger.LogInformation("Computer name is {computerName}", computerName);
@@ -50,11 +49,12 @@ namespace BeaconClient
 
             try
             {
-                HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/SubmitIpAddress", model);
+                StringContent content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await httpClient.PostAsync("api/SubmitIpAddress", content);
                 try
                 {
                     response.EnsureSuccessStatusCode();
-                    logger.LogInformation("successfully updated IP. Total {ipCount} entrie(s)", nicIpInfo.Count);
+                    logger.LogInformation("successfully updated IP. Total {ipCount} entries.", nicIpInfo.Count);
                 }
                 catch (HttpRequestException)
                 {
@@ -71,11 +71,11 @@ namespace BeaconClient
 
         public Task SendIpAsync()
         {
-            var myIp = ipRetrivingService.GetIpForAllNics();
+            var myIp = ipRetrievingService.GetIpForAllInterfaces();
             return SendIpAsync(computerName, myIp);
         }
 
-        private async void IpRetrivingService_IpAddressChanged(IList<NicIpInfo> ipInfoList)
+        private async void IpRetrievingService_IpAddressChanged(IList<NicIpInfo> ipInfoList)
         {
             await SendIpAsync(computerName, ipInfoList);
         }
