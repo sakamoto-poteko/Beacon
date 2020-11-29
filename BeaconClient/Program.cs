@@ -1,62 +1,76 @@
 ﻿using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using BeaconClient;
+using BeaconClient.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
+using Quartz;
 
-namespace Beacon
+namespace BeaconClient
 {
     class Program
     {
-        public static IPublicClientApplication PublicClientApp;
+        private const string MSATenant = "9188040d-6c67-4c5b-b112-36a304b66dad";
 
-        static async System.Threading.Tasks.Task Main(string[] args)
+        static void Main(string[] args)
         {
-            var app = PublicClientApplicationBuilder.Create("4c975b25-5425-4c0c-a209-2690835c1260")
-                    .WithRedirectUri("http://localhost")
-                    .WithAuthority(AzureCloudInstance.AzurePublic, "9188040d-6c67-4c5b-b112-36a304b66dad")
-                    .Build();
-
-            var authResult = await app.AcquireTokenInteractive(new[] { "" }).ExecuteAsync();
-
-            var builder = new HostBuilder()
-                    .ConfigureAppConfiguration((ctx, config) =>
-                    {
-                        config.AddJsonFile("appsettings.json", optional: true);
-                        config.AddEnvironmentVariables();
-
-                        if (args != null)
-                        {
-                            config.AddCommandLine(args);
-                        }
-                    })
-                    .ConfigureServices((ctx, services) =>
-                    {
-                        ConfigureServices(services, authResult.IdToken);
-                    })
-                    .ConfigureLogging((ctx, loggingBuilder) =>
-                    {
-                        loggingBuilder.AddConfiguration(ctx.Configuration.GetSection("Logging"));
-                        loggingBuilder.AddConsole();
-                    });
-
-            await builder.RunConsoleAsync();
+            IHost host = CreateHostBuilder(args).Build();
+            host.Run();
         }
 
-        private static void ConfigureServices(IServiceCollection services, string token)
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args).ConfigureServices(ConfigureServices);
+
+        private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
         {
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            services.AddSingleton<HttpClient>(httpClient);
+            services.AddMsalClient("4c975b25-5425-4c0c-a209-2690835c1260", MSATenant);
+
+            services.AddQuartz(config =>
+            {
+                config.SchedulerName = IpUploadSchedulerConstants.SchedulerId;
+                config.SchedulerId = IpUploadSchedulerConstants.SchedulerId;
+
+                config.UseMicrosoftDependencyInjectionScopedJobFactory();
+
+                config.UseSimpleTypeLoader();
+                config.UseInMemoryStore();
+                config.UseDefaultThreadPool(tp =>
+                {
+                    tp.MaxConcurrency = 2;
+                });
+            });
+            services.AddQuartzHostedService();
+
+            var serverConfiguration = new ServerConfiguration();
+            context.Configuration.GetSection("ServerConfiguration").Bind(serverConfiguration);
+
+            services.AddSingleton<HttpClient>(sp =>
+            {
+                var httpMessageHandler = sp.GetService<AuthorizedHttpHandler>();
+                var httpClient = new HttpClient(httpMessageHandler)
+                {
+                    BaseAddress = new Uri(serverConfiguration.Endpoint)
+                };
+
+                httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("BeaconClient", "1.0.0"));
+
+                return httpClient;
+            });
+
+            services.AddOptions<ServerConfiguration>("ServerConfiguration");
+            // TODO: add validator
+
+            services.AddSingleton<AuthorizedHttpHandler>();
+            services.AddSingleton<IAuthorizationTokenManager, AuthorizationTokenManager>();
             services.AddSingleton<IIpRetrivingService, IpRetrivingService>();
             services.AddSingleton<IIpUploadingService, IpUploadingService>();
-            services.AddSingleton<IpUploadingScheduler>();
-            services.AddSingleton<IIpUploadingScheduler>(sp => sp.GetService<IpUploadingScheduler>());
-            services.AddHostedService<IpUploadingScheduler>(sp => sp.GetService<IpUploadingScheduler>());
+            services.AddSingleton<IIpUploadingScheduler, IpUploadingScheduler>();
+
+            services.AddTransient<IpUploadingJob>();
+
+            services.AddHostedService<OneTimeConfigureService>();
+
+            services.AddLogging();
         }
     }
 }

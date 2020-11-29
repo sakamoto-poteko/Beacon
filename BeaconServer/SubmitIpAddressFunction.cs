@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Beacon.Common;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace BeaconServer
 {
@@ -15,12 +18,10 @@ namespace BeaconServer
     {
         [FunctionName("SubmitIpAddress")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] SubmitIpModel model,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
             [Table(HostIpDataEntity.TableName, Connection = "AzureWebJobsStorage")] CloudTable cloudTable,
             ClaimsPrincipal principal, ILogger log)
         {
-            log.LogTrace($"IP update request received");
-
             var userIdClaim = principal?.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier");
             var userId = userIdClaim?.Value;
             if (string.IsNullOrWhiteSpace(userId))
@@ -29,12 +30,28 @@ namespace BeaconServer
                 return new UnauthorizedResult();
             }
 
+            log.LogTrace("IP update request received");
+
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            SubmitIpModel model;
+
+            try
+            {
+                model = JsonConvert.DeserializeObject<SubmitIpModel>(requestBody);
+            }
+            catch (JsonException)
+            {
+                log.LogError("IP update request has invalid payload");
+                return new BadRequestResult();
+            }
+
             var validationResult = new List<ValidationResult>();
             bool isValid = Validator.TryValidateObject(model, new ValidationContext(model), validationResult);
 
             if (!isValid)
             {
-                log.LogTrace($"IP update request has invalid model");
+                log.LogError("IP update request has invalid model");
                 return new BadRequestObjectResult(validationResult);
             }
 

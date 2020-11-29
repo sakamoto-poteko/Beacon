@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Beacon
+namespace BeaconClient
 {
     public interface IIpRetrivingService
     {

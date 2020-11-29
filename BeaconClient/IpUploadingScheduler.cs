@@ -1,31 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Beacon;
-using Microsoft.Extensions.Hosting;
+﻿using Quartz;
 
 namespace BeaconClient
 {
-    public class IpUploadingScheduler : BackgroundService, IIpUploadingScheduler
+    public class IpUploadingScheduler : IIpUploadingScheduler
     {
-        private readonly IIpUploadingService ipUploadingService;
+        private readonly IScheduler scheduler;
+        private readonly JobKey uploadingJobKey;
+        private readonly TriggerKey uploadingTriggerKey;
 
-        public IpUploadingScheduler(IIpUploadingService ipUploadingService)
+        public IpUploadingScheduler(ISchedulerFactory factory)
         {
-            this.ipUploadingService = ipUploadingService;
+            scheduler = factory.GetScheduler().Result;
+            uploadingJobKey = new JobKey(IpUploadSchedulerConstants.JobId, IpUploadSchedulerConstants.JobGroup);
+            uploadingTriggerKey = new TriggerKey(IpUploadSchedulerConstants.TriggerId);
+        }
+
+        public void CreateJob()
+        {
+            var jobdetail = JobBuilder.Create<IpUploadingJob>().WithIdentity(uploadingJobKey).StoreDurably().Build();
+            scheduler.AddJob(jobdetail, true);
         }
 
         public void SetSchedule(string cron)
         {
-            throw new NotImplementedException();
+            scheduler.UnscheduleJob(uploadingTriggerKey);
+            var trigger = TriggerBuilder
+                .Create()
+                .ForJob(uploadingJobKey)
+                .StartNow()
+                .WithIdentity(uploadingTriggerKey)
+                .WithCronSchedule(cron)
+                .Build();
+            scheduler.ScheduleJob(trigger);
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        public void TriggerNow()
         {
-            return this.ipUploadingService.SendIpAsync();
+            scheduler.TriggerJob(uploadingJobKey);
         }
     }
 }

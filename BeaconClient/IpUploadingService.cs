@@ -5,9 +5,12 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Beacon.Common;
+using BeaconClient.Exceptions;
+using BeaconClient.Settings;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace Beacon
+namespace BeaconClient
 {
     public class IpUploadingService : IIpUploadingService
     {
@@ -23,14 +26,15 @@ namespace Beacon
             this.logger = logger;
             this.ipRetrivingService.IpAddressChanged += IpRetrivingService_IpAddressChanged;
 
-            this.computerName = Environment.MachineName;
+            computerName = Environment.MachineName;
+            logger.LogInformation("Computer name is {computerName}", computerName);
         }
 
         public async Task SendIpAsync(string computerName, IList<NicIpInfo> nicIpInfo)
         {
             if (nicIpInfo.Count == 0)
             {
-                this.logger.LogInformation($"No IP available on computer {computerName}");
+                logger.LogInformation("No IP available on computer {computerName}", computerName);
             }
 
             var model = new SubmitIpModel
@@ -44,28 +48,36 @@ namespace Beacon
                 }).ToList()
             };
 
-            var response = await this.httpClient.PostAsJsonAsync("http://localhost:7071/api/SubmitIpAddress", model);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                this.logger.LogInformation($"successfully updated IP for {computerName}. Total {nicIpInfo.Count} entrie(s)");
+                HttpResponseMessage response = await httpClient.PostAsJsonAsync("api/SubmitIpAddress", model);
+                try
+                {
+                    response.EnsureSuccessStatusCode();
+                    logger.LogInformation("successfully updated IP. Total {ipCount} entrie(s)", nicIpInfo.Count);
+                }
+                catch (HttpRequestException)
+                {
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    logger.LogError("failed to update IP. Status code: {statusCode}. Message: {responseString}",
+                        response.StatusCode, responseString);
+                }
             }
-            else
+            catch (AuthorizationTokenException exception)
             {
-                var responseString = await response.Content.ReadAsStringAsync();
-                this.logger.LogError($"failed to update IP for {computerName}. Status code: {response.StatusCode}. Message: {responseString}");
+                logger.LogError("failed to retrieve authorization token: {message}", exception.Message);
             }
         }
 
         public Task SendIpAsync()
         {
-            var myIp = this.ipRetrivingService.GetIpForAllNics();
-            return SendIpAsync(this.computerName, myIp);
+            var myIp = ipRetrivingService.GetIpForAllNics();
+            return SendIpAsync(computerName, myIp);
         }
 
         private async void IpRetrivingService_IpAddressChanged(IList<NicIpInfo> ipInfoList)
         {
-            await SendIpAsync(this.computerName, ipInfoList);
+            await SendIpAsync(computerName, ipInfoList);
         }
     }
 }

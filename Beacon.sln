@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeaconClient", "BeaconClient\BeaconClient.csproj", "{24909A6C-0F80-4DCD-A983-E2A56B4FBEFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeaconServer", "BeaconServer\BeaconServer.csproj", "{0F80A81B-577A-4912-9CD6-9440C8082982}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeaconServer", "BeaconServer\BeaconServer.csproj", "{0F80A81B-577A-4912-9CD6-9440C8082982}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beacon.Common", "Beacon.Common\Beacon.Common.csproj", "{16EC8ECD-34BE-493F-AD2E-67BEBE8EF44F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Common", "Beacon.Common\Beacon.Common.csproj", "{16EC8ECD-34BE-493F-AD2E-67BEBE8EF44F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
