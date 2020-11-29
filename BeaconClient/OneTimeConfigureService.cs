@@ -20,7 +20,7 @@ namespace BeaconClient
         public Task StartAsync(CancellationToken cancellationToken)
         {
             ipUploadingScheduler.CreateJob();
-            ipUploadingScheduler.SetSchedule("0 * * * * ?"); // every second
+            ipUploadingScheduler.SetSchedule("0 0 * * * ?"); // every hour
             ipUploadingScheduler.TriggerNow();
             return Task.CompletedTask;
         }

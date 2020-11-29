@@ -29,7 +29,7 @@ namespace BeaconClient
                 .ForJob(uploadingJobKey)
                 .StartNow()
                 .WithIdentity(uploadingTriggerKey)
-                .WithCronSchedule(cron)
+                .WithCronSchedule(cron, conf => conf.WithMisfireHandlingInstructionIgnoreMisfires())
                 .Build();
             scheduler.ScheduleJob(trigger);
         }

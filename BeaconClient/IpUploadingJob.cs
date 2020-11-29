@@ -4,6 +4,7 @@ using Quartz;
 
 namespace BeaconClient
 {
+    [DisallowConcurrentExecution]
     public class IpUploadingJob : IJob
     {
         private readonly IIpUploadingService ipUploadingService;
@@ -18,6 +19,8 @@ namespace BeaconClient
         public Task Execute(IJobExecutionContext context)
         {
             logger.LogInformation("Executing send ip job");
+            // TODO: handle exception here
+            // HttpRequestException
             return ipUploadingService.SendIpAsync();
         }
     }
