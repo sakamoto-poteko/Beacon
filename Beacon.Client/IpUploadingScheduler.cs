@@ -34,6 +34,11 @@ namespace Beacon.Client
             scheduler.ScheduleJob(trigger);
         }
 
+        public void Unschedule()
+        {
+            scheduler.UnscheduleJob(uploadingTriggerKey);
+        }
+
         public void TriggerNow()
         {
             scheduler.TriggerJob(uploadingJobKey);

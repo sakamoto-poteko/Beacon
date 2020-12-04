@@ -6,6 +6,8 @@
 
         void SetSchedule(string cron);
 
+        void Unschedule();
+
         void TriggerNow();
     }
 }

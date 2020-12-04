@@ -23,7 +23,6 @@ namespace Beacon.Client
             this.httpClient = httpClient;
             this.ipRetrievingService = ipRetrievingService;
             this.logger = logger;
-            this.ipRetrievingService.IpAddressChanged += IpRetrievingService_IpAddressChanged;
 
             computerName = Environment.MachineName;
             logger.LogInformation("Computer name is {computerName}", computerName);
@@ -49,23 +48,29 @@ namespace Beacon.Client
 
             try
             {
-                StringContent content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+                StringContent content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8,
+                    "application/json");
                 HttpResponseMessage response = await httpClient.PostAsync("api/SubmitIpAddress", content);
                 try
                 {
                     response.EnsureSuccessStatusCode();
                     logger.LogInformation("successfully updated IP. Total {ipCount} entries.", nicIpInfo.Count);
                 }
-                catch (HttpRequestException)
+                catch (HttpRequestException exception)
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
-                    logger.LogError("failed to update IP. Status code: {statusCode}. Message: {responseString}",
-                        response.StatusCode, responseString);
+                    var message =
+                        $"HTTP request failed.\nStatus code: {response.StatusCode}.\nMessage: {responseString}";
+                    throw new UpdateIpException(message, exception);
                 }
+            }
+            catch (TaskCanceledException exception)
+            {
+                throw new UpdateIpException("HTTP operation timed out", exception);
             }
             catch (AuthorizationTokenException exception)
             {
-                logger.LogError("failed to retrieve authorization token: {message}", exception.Message);
+                throw new UpdateIpException("failed to retrieve authorization token", exception);
             }
         }
 
@@ -73,11 +78,6 @@ namespace Beacon.Client
         {
             var myIp = ipRetrievingService.GetIpForAllInterfaces();
             return SendIpAsync(computerName, myIp);
-        }
-
-        private async void IpRetrievingService_IpAddressChanged(IList<NicIpInfo> ipInfoList)
-        {
-            await SendIpAsync(computerName, ipInfoList);
         }
     }
 }
