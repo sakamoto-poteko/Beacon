@@ -8,14 +8,16 @@ namespace Beacon.Server
     {
         public const string TableName = "HostIpMap";
 
-        public string Name { get; set; }
+        public string NicName { get; set; }
+
+        public string NicId { get; set; }
 
         public string UserId { get; set; }
 
         public string ComputerName { get; set; }
 
         [IgnoreProperty]
-        public IList<string> Addresses
+        public IEnumerable<string> Addresses
         {
             get => DeserializeAddresses(AddressesList);
 
@@ -24,24 +26,27 @@ namespace Beacon.Server
 
         public string AddressesList { get; set; }
 
-        private string SerializeAddress(IList<string> addresses)
+        private string SerializeAddress(IEnumerable<string> addresses)
         {
             return JsonConvert.SerializeObject(addresses);
         }
 
-        private IList<string> DeserializeAddresses(string addressesList)
+        private IEnumerable<string> DeserializeAddresses(string addressesList)
         {
-            return JsonConvert.DeserializeObject<IList<string>>(addressesList);
+            return JsonConvert.DeserializeObject<IEnumerable<string>>(addressesList);
         }
 
         public HostIpDataEntity()
         {
         }
 
-        public HostIpDataEntity(string userId, string computerName, string nicId)
+        public HostIpDataEntity(string userId, string computerName, string nicId, string nicName, IEnumerable<string> addresses)
         {
             this.UserId = UserId;
             this.ComputerName = computerName;
+            this.NicId = nicId;
+            this.NicName = nicName;
+            this.Addresses = addresses;
             this.PartitionKey = GetPartitionKey(userId);
             this.RowKey = GetRowKey(userId, computerName, nicId);
         }

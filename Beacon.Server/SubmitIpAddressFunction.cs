@@ -22,7 +22,7 @@ namespace Beacon.Server
             [Table(HostIpDataEntity.TableName, Connection = "AzureWebJobsStorage")] CloudTable cloudTable,
             ClaimsPrincipal principal, ILogger log)
         {
-            var userIdClaim = principal?.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier");
+            var userIdClaim = principal?.FindFirst(Claims.ObjectId);
             var userId = userIdClaim?.Value;
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -34,11 +34,11 @@ namespace Beacon.Server
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-            SubmitIpModel model;
+            UpdateIpRequestModel model;
 
             try
             {
-                model = JsonConvert.DeserializeObject<SubmitIpModel>(requestBody);
+                model = JsonConvert.DeserializeObject<UpdateIpRequestModel>(requestBody);
             }
             catch (JsonException)
             {
@@ -61,12 +61,7 @@ namespace Beacon.Server
 
                 foreach (var nicInfo in model.NicIp)
                 {
-                    var entity = new HostIpDataEntity(userId, model.ComputerName, nicInfo.Id)
-                    {
-                        Addresses = nicInfo.Addresses,
-                        Name = nicInfo.Name
-                    };
-
+                    var entity = new HostIpDataEntity(userId, model.ComputerName, nicInfo.Id, nicInfo.Name, nicInfo.Addresses);
                     TableOperation insertOp = TableOperation.InsertOrMerge(entity);
                     batchOperations.Add(insertOp);
                 }

@@ -35,10 +35,10 @@ namespace Beacon.Client
                 logger.LogInformation("No IP available on computer {computerName}", computerName);
             }
 
-            var model = new SubmitIpModel
+            var model = new UpdateIpRequestModel
             {
                 ComputerName = computerName,
-                NicIp = nicIpInfo.Select(info => new NicIpModel
+                NicIp = nicIpInfo.Select(info => new NicIpModelForUpdate
                 {
                     Id = info.Id,
                     Name = info.NicName,

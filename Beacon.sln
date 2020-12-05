@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Server", "Beacon.Ser
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Common", "Beacon.Common\Beacon.Common.csproj", "{16EC8ECD-34BE-493F-AD2E-67BEBE8EF44F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beacon.Client.Console", "Beacon.Client.Console\Beacon.Client.Console.csproj", "{A4194267-7901-47DE-8E7F-8C3716A68D3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Client.Console", "Beacon.Client.Console\Beacon.Client.Console.csproj", "{A4194267-7901-47DE-8E7F-8C3716A68D3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

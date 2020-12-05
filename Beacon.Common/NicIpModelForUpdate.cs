@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Beacon.Common
 {
-    public class NicIpModel
+    public class NicIpModelForUpdate
     {
         [Required]
         public string Id { get; set; }
@@ -13,15 +13,11 @@ namespace Beacon.Common
         public string Name { get; set; }
 
         [Required]
-        public IList<string> Addresses { get; set; }
+        public IEnumerable<string> Addresses { get; set; }
     }
 
-    public class SubmitIpModel
+    public class NicIpModelForGet : NicIpModelForUpdate
     {
-        [Required]
-        public string ComputerName { get; set; }
-
-        [Required]
-        public IList<NicIpModel> NicIp { get; set; }
+        public DateTime LastUpdated { get; set; }
     }
 }
