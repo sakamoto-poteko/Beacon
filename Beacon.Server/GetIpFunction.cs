@@ -13,9 +13,9 @@ namespace Beacon.Server
 {
     public static class GetIpFunction
     {
-        [FunctionName("GetIp")]
+        [FunctionName("GetIP")]
         public static IActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ip")] HttpRequest req,
             [Table(HostIpDataEntity.TableName, Connection = "AzureWebJobsStorage")] CloudTable cloudTable,
             ClaimsPrincipal principal,
             ILogger log)

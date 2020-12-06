@@ -50,7 +50,7 @@ namespace Beacon.Client
             {
                 StringContent content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8,
                     "application/json");
-                HttpResponseMessage response = await httpClient.PostAsync("api/SubmitIpAddress", content);
+                HttpResponseMessage response = await httpClient.PostAsync("api/ip", content);
                 try
                 {
                     response.EnsureSuccessStatusCode();

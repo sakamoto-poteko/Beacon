@@ -14,11 +14,11 @@ using Newtonsoft.Json;
 
 namespace Beacon.Server
 {
-    public static class SubmitIpAddressFunction
+    public static class UpdateIpFunction
     {
-        [FunctionName("SubmitIpAddress")]
+        [FunctionName("UpdateIP")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ip")] HttpRequest req,
             [Table(HostIpDataEntity.TableName, Connection = "AzureWebJobsStorage")] CloudTable cloudTable,
             ClaimsPrincipal principal, ILogger log)
         {
@@ -75,7 +75,7 @@ namespace Beacon.Server
 
             log.LogTrace("successfully updated IP for computer {ComputerName}, {Entries} entries updated", model.ComputerName, model.NicIp.Count);
 
-            return new OkResult();
+            return new NoContentResult();
         }
     }
 }
