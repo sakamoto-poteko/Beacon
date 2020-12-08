@@ -1,11 +1,10 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Beacon.Client
 {
-    public class AuthorizedHttpHandler : HttpClientHandler
+    public class AuthorizedHttpHandler : DelegatingHandler
     {
         private readonly IAuthorizationTokenManager authorizationTokenManager;
 

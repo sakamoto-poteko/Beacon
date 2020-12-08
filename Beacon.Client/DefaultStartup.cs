@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Beacon.Client.Settings;
+using Beacon.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,20 +37,11 @@ namespace Beacon.Client
             context.Configuration.GetSection("ServerConfiguration").Bind(serverConfiguration);
             services.AddSingleton<AuthorizedHttpHandler>();
             services.AddSingleton<IAuthorizationTokenManager, AuthorizationTokenManager>();
-            services.AddSingleton(sp =>
+            services.AddHttpClient<BeaconHttpClient>(client =>
             {
-                var httpMessageHandler = sp.GetService<AuthorizedHttpHandler>();
-                var httpClient = new HttpClient(httpMessageHandler)
-                {
-                    BaseAddress = new Uri(serverConfiguration.Endpoint)
-                };
-
-                // TODO: version info
-                httpClient.DefaultRequestHeaders.UserAgent.Add(
-                    new System.Net.Http.Headers.ProductInfoHeaderValue("BeaconClient", "1.0.0"));
-
-                return httpClient;
-            });
+                client.BaseAddress = new Uri(serverConfiguration.Endpoint);
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BeaconClient", "1.0.0"));
+            }).AddHttpMessageHandler<AuthorizedHttpHandler>();
         }
 
         protected virtual void ConfigureOneTimeConfigureService(HostBuilderContext context, IServiceCollection services)
@@ -67,11 +60,11 @@ namespace Beacon.Client
             services.AddOptions<ServerConfiguration>("ServerConfiguration");
             // TODO: add validator
 
-            services.AddSingleton<IIpRetrievingService, IpRetrievingService>();
-            services.AddSingleton<IIpUploadingService, IpUploadingService>();
-            services.AddSingleton<IIpUploadingScheduler, IpUploadingScheduler>();
+            services.AddSingleton<IIPRetrievingService, IpRetrievingService>();
+            services.AddSingleton<IIPUpdateService, IPUpdateService>();
+            services.AddSingleton<IIPUpdateScheduler, IPUpdateScheduler>();
 
-            services.AddTransient<IpUploadingJob>();
+            services.AddTransient<IPUpdateJob>();
 
             ConfigureOneTimeConfigureService(context, services);
 
@@ -82,5 +75,5 @@ namespace Beacon.Client
         {
 
         }
-     }
+    }
 }

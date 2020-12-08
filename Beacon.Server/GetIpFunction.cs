@@ -36,10 +36,10 @@ namespace Beacon.Server
             IEnumerable<HostIpDataEntity> queryResult = cloudTable.ExecuteQuery<HostIpDataEntity>(query);
 
             var response = queryResult.GroupBy(result => result.ComputerName).Select(group =>
-                new GetIpResponseModel
+                new GetIPResponseModel
                 {
                     ComputerName = group.Key,
-                    NicIp = group.Select(hostIpDataEntity => new NicIpModelForGet
+                    NicIp = group.Select(hostIpDataEntity => new GetIPResponseModel.NicIPModel
                     {
                         Name = hostIpDataEntity.NicName,
                         Id = hostIpDataEntity.NicId,

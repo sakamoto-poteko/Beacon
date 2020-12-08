@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Beacon.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Beacon.Client
 {
-    public class IpRetrievingService : IIpRetrievingService
+    public class IpRetrievingService : IIPRetrievingService
     {
         private readonly ILogger<IpRetrievingService> logger;
-        public event Action<IList<NicIpInfo>> IpAddressChanged;
+        public event Action<IList<NetworkInterfaceIPModel>> IPAddressChanged;
 
         public IpRetrievingService(ILogger<IpRetrievingService> logger)
         {
@@ -21,12 +22,12 @@ namespace Beacon.Client
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
             logger.LogInformation("IP address has changed in this computer");
-            IpAddressChanged?.Invoke(GetIpForAllInterfaces());
+            IPAddressChanged?.Invoke(GetIpForAllInterfaces());
         }
 
-        public IList<NicIpInfo> GetIpForAllInterfaces()
+        public IList<NetworkInterfaceIPModel> GetIpForAllInterfaces()
         {
-            List<NicIpInfo> infoList = new List<NicIpInfo>();
+            List<NetworkInterfaceIPModel> infoList = new List<NetworkInterfaceIPModel>();
 
             foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
@@ -45,11 +46,11 @@ namespace Beacon.Client
 
                 if (ipList.Count > 0)
                 {
-                    NicIpInfo info = new NicIpInfo
+                    NetworkInterfaceIPModel info = new NetworkInterfaceIPModel
                     {
-                        Id = networkInterface.Id,
-                        NicName = networkInterface.Name,
-                        Address = ipList
+                        InterfaceId = networkInterface.Id,
+                        InterfaceName = networkInterface.Name,
+                        IPAddresses = ipList
                     };
 
                     infoList.Add(info);

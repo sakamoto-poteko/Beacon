@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Beacon.Client.Exceptions;
@@ -9,12 +8,12 @@ using Quartz;
 namespace Beacon.Client
 {
     [DisallowConcurrentExecution]
-    public class IpUploadingJob : IJob
+    public class IPUpdateJob : IJob
     {
-        private readonly IIpUploadingService ipUploadingService;
-        private readonly ILogger<IpUploadingJob> logger;
+        private readonly IIPUpdateService ipUploadingService;
+        private readonly ILogger<IPUpdateJob> logger;
 
-        public IpUploadingJob(IIpUploadingService ipUploadingService, ILogger<IpUploadingJob> logger)
+        public IPUpdateJob(IIPUpdateService ipUploadingService, ILogger<IPUpdateJob> logger)
         {
             this.ipUploadingService = ipUploadingService;
             this.logger = logger;
@@ -25,9 +24,9 @@ namespace Beacon.Client
             logger.LogInformation("updating IP address...");
             try
             {
-                await ipUploadingService.SendIpAsync();
+                await ipUploadingService.UpdateMyIPAsync();
             }
-            catch (UpdateIpException exception)
+            catch (UpdateIPException exception)
             {
                 logger.LogError("failed to update IP: {message}", exception.Message);
             }

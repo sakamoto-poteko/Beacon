@@ -2,13 +2,13 @@
 
 namespace Beacon.Client
 {
-    public class IpUploadingScheduler : IIpUploadingScheduler
+    public class IPUpdateScheduler : IIPUpdateScheduler
     {
         private readonly IScheduler scheduler;
         private readonly JobKey uploadingJobKey;
         private readonly TriggerKey uploadingTriggerKey;
 
-        public IpUploadingScheduler(ISchedulerFactory factory)
+        public IPUpdateScheduler(ISchedulerFactory factory)
         {
             scheduler = factory.GetScheduler().Result;
             uploadingJobKey = new JobKey(IpUploadSchedulerConstants.JobId, IpUploadSchedulerConstants.JobGroup);
@@ -17,7 +17,7 @@ namespace Beacon.Client
 
         public void CreateJob()
         {
-            var jobdetail = JobBuilder.Create<IpUploadingJob>().WithIdentity(uploadingJobKey).StoreDurably().Build();
+            var jobdetail = JobBuilder.Create<IPUpdateJob>().WithIdentity(uploadingJobKey).StoreDurably().Build();
             scheduler.AddJob(jobdetail, true);
         }
 
