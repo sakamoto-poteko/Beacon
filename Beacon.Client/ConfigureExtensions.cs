@@ -12,10 +12,10 @@ namespace Beacon.Client
                 ? msalClientBuilder.WithBroker(true)
                 : msalClientBuilder.WithRedirectUri("http://localhost")
                     .WithAuthority(AzureCloudInstance.AzurePublic, tenantId);
-            var msalClient = msalClientBuilder.Build();
+            IPublicClientApplication msalClient = msalClientBuilder.Build();
 
             TokenCacheHelper.EnableSerialization(msalClient.UserTokenCache);
-            services.AddSingleton(msalClient);
+            services.AddSingleton<IPublicClientApplication>(msalClient);
         }
     }
 }
