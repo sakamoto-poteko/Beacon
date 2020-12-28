@@ -56,9 +56,9 @@ namespace Beacon.Client
             services.AddHostedService<OneTimeConfigureService>();
         }
 
-        public virtual void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+        protected void ConfigureCoreServices(HostBuilderContext context, IServiceCollection services, bool useWam)
         {
-            services.AddMsalClient("4c975b25-5425-4c0c-a209-2690835c1260", AuthorizationConstants.MsaTenant);
+            services.AddMsalClient("4c975b25-5425-4c0c-a209-2690835c1260", AuthorizationConstants.MsaTenant, useWam);
 
             ConfigureQuartz(context, services);
 
@@ -76,6 +76,11 @@ namespace Beacon.Client
             ConfigureOneTimeConfigureService(context, services);
 
             services.AddLogging();
+        }
+
+        public virtual void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+        {
+            ConfigureCoreServices(context, services, false);
         }
 
         public virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)

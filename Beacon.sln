@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Common", "Beacon.Com
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beacon.Client.Console", "Beacon.Client.Console\Beacon.Client.Console.csproj", "{A4194267-7901-47DE-8E7F-8C3716A68D3E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beacon.Client.WPF", "Beacon.Client.WPF\Beacon.Client.WPF.csproj", "{C95FFBD8-AFC5-458C-870F-E1E6FEFC2B38}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{A4194267-7901-47DE-8E7F-8C3716A68D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4194267-7901-47DE-8E7F-8C3716A68D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4194267-7901-47DE-8E7F-8C3716A68D3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C95FFBD8-AFC5-458C-870F-E1E6FEFC2B38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C95FFBD8-AFC5-458C-870F-E1E6FEFC2B38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C95FFBD8-AFC5-458C-870F-E1E6FEFC2B38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C95FFBD8-AFC5-458C-870F-E1E6FEFC2B38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

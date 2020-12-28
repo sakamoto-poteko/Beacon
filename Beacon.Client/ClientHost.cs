@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Beacon.Client
 {
-    public class ClientHost
+    public class ClientHost : IDisposable
     {
         public IHost GenericHost { get; private set; }
 
@@ -29,6 +29,11 @@ namespace Beacon.Client
         public void BuildHost(string[] args, Action<IHostBuilder> configureHost = null)
         {
             BuildHost<DefaultStartup>(args, configureHost);
+        }
+
+        public void Dispose()
+        {
+            GenericHost?.Dispose();
         }
     }
 }
