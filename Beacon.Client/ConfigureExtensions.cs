@@ -8,9 +8,9 @@ namespace Beacon.Client
         public static void AddMsalClient(this IServiceCollection services, string clientId, string tenantId, bool useWam = false)
         {
             var msalClientBuilder = PublicClientApplicationBuilder.Create(clientId);
-            msalClientBuilder = useWam
+            msalClientBuilder = useWam // FIXME: this won't work until 4.25 of MSAL
                 ? msalClientBuilder.WithBroker(true)
-                : msalClientBuilder.WithRedirectUri("http://localhost")
+                : msalClientBuilder.WithRedirectUri("http://localhost") // WAM doesn't have redirect uri
                     .WithAuthority(AzureCloudInstance.AzurePublic, tenantId);
             IPublicClientApplication msalClient = msalClientBuilder.Build();
 
