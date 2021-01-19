@@ -85,7 +85,8 @@ namespace Beacon.Client
                         {
                             InterfaceId = iface.Id,
                             InterfaceName = iface.Name,
-                            IPAddresses = iface.Addresses.Select(ip => IPAddress.Parse(ip))
+                            IPAddresses = iface.Addresses.Select(ip => IPAddress.Parse(ip)),
+                            LastUpdatedOn = iface.LastUpdated,
                         })));
                     }
                     catch (JsonException exception)

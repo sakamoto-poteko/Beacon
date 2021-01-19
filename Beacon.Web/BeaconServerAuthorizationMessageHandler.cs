@@ -128,7 +128,7 @@ namespace Beacon.Web
             base(accessTokenProvider, navigationManager)
         {
             ConfigureHandler(
-                authorizedUrls: new[] { "https://localhost:7001", "https://beacon.azurewebsites.net" }
+                authorizedUrls: new[] { "https://localhost:7001", "https://beacon.azurewebsites.net" }, scopes: new[] { "openid" , "offline_access", "api://Poteko.Beacon/IP.ReadWrite" }
                 );
         }
     }

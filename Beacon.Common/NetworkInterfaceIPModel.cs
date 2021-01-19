@@ -12,5 +12,7 @@ namespace Beacon.Common
         public string InterfaceName { get; set; }
         
         public IEnumerable<IPAddress> IPAddresses { get; set; }
+
+        public DateTime LastUpdatedOn { get; set; }
     }
 }

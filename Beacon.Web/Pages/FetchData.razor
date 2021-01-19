@@ -6,53 +6,108 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (forecasts == null)
+@if (computers == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <table class="table">
+    <table class="table table-bordered">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th scope="col">Computer Name</th>
+                <th scope="col">Interface Name</th>
+                <th scope="col">IP Address</th>
+                <th scope="col">Link</th>
+                <th scope="col">Last Updated</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach ((string computerName, IEnumerable<Beacon.Common.NetworkInterfaceIPModel> interfaces) in computers)
             {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
+                int ifaceCount = interfaces.Count();
+                int ipCount = interfaces.Sum(iface => iface.IPAddresses.Count());
+
+                for (int i = 0; i < interfaces.Count(); i++)
+                {
+                    var iface = interfaces.ElementAt(i);
+
+                    for (int j = 0; j < iface.IPAddresses.Count(); ++j)
+                    {
+                        var ip = iface.IPAddresses.ElementAt(j);
+
+                        <tr>
+                            @if (i == 0 && j == 0)
+                            {
+                                <td scope="row" rowspan="@ipCount">@computerName</td>
+                            }
+
+                            @if (j == 0)
+                            {
+                                <td rowspan="@iface.IPAddresses.Count()">@iface.InterfaceName</td>
+                            }
+
+                            @{
+                                string color;
+
+                                const string danger = "table-danger";
+                                const string success = "table-success";
+
+                                if (ip.IsIPv6LinkLocal || System.Net.IPAddress.IsLoopback(ip))
+                                {
+                                    color = danger;
+                                }
+                                else
+                                {
+                                    color = success;
+                                }
+                            }
+
+                            <td class="@color">@ip.ToString()</td>
+                            <td><a href="rdp://full%20address=s:@ip:3389&audiomode=i:2&disable%20themes=i:1">RDP</a></td>
+
+                            @if (j == 0)
+                            {
+                                if (iface.LastUpdatedOn.AddDays(1) > DateTime.UtcNow)
+                                {
+                                    color = danger;
+                                }
+                                else
+                                {
+                                    color = string.Empty;
+                                }
+
+                                <td rowspan="@iface.IPAddresses.Count()" class="@color">@iface.LastUpdatedOn</td>
+                            }
+                        </tr>
+                    }
+                }
+
+                foreach (var ip in interfaces)
+                {
+                    ipCount += ip.IPAddresses.Count();
+                }
             }
         </tbody>
     </table>
 }
 
 @code {
-        private WeatherForecast[] forecasts;
+    private IEnumerable<(string computerName, IEnumerable<Beacon.Common.NetworkInterfaceIPModel> interafces)> computers;
 
-            protected override async Task OnInitializedAsync()
-            {
-                var dummy = await Http.GetIPAsync();
-                Console.WriteLine(dummy.Count());
-                //forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-            }
+    protected override async Task OnInitializedAsync()
+    {
+        computers = await Http.GetIPAsync();
+    }
 
-            public class WeatherForecast
-            {
-                public DateTime Date { get; set; }
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
 
-                public int TemperatureC { get; set; }
+        public int TemperatureC { get; set; }
 
-                public string Summary { get; set; }
+        public string Summary { get; set; }
 
-                public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-            }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
 }
