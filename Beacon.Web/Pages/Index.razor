@@ -1,0 +1,159 @@
+﻿@page "/"
+@using Beacon.Web.Components
+@using System.Net
+@inject BeaconHttpClient Http
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<h1>IP Addresses</h1>
+
+<p>Now you know!</p>
+
+@if (computers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Computer Name</th>
+                <th scope="col">Interface Name</th>
+                <th scope="col">IP Address</th>
+                <th scope="col">Link</th>
+                <th scope="col">Last Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ((string computerName, IEnumerable<Beacon.Common.NetworkInterfaceIPModel> interfaces) in computers)
+            {
+                int ifaceCount = interfaces.Count();
+                int ipCount = interfaces.Sum(iface => iface.IPAddresses.Count());
+
+                for (int i = 0; i < interfaces.Count(); i++)
+                {
+                    var iface = interfaces.ElementAt(i);
+
+                    for (int j = 0; j < iface.IPAddresses.Count(); ++j)
+                    {
+                        var ip = iface.IPAddresses.ElementAt(j);
+
+                        <tr>
+                            @if (i == 0 && j == 0)
+                            {
+                                <td scope="row" rowspan="@ipCount">@computerName</td>
+                            }
+
+                            @if (j == 0)
+                            {
+                                <td rowspan="@iface.IPAddresses.Count()">@iface.InterfaceName</td>
+                            }
+
+                            @{
+                                string color = string.Empty;
+
+                                switch (getAddressType(ip))
+                                {
+                                    case IPTypes.Normal:
+                                        break;
+                                    case IPTypes.Private:
+                                        color = TableWarning;
+                                        break;
+                                    case IPTypes.LinkLocal:
+                                        color = TableDanger;
+                                        break;
+                                    case IPTypes.CarrierGradeNAT:
+                                        color = TableWarning;
+                                        break;
+                                    case IPTypes.Invalid:
+                                        color = TableDanger;
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+                            }
+
+                            <td class="@color">
+                                <CopyToClickboardComponent Text="@ip.ToString()" />
+                            </td>
+
+                            <td><a href="rdp://full%20address=s:@ip:3389&audiomode=i:2&disable%20themes=i:1">RDP</a></td>
+
+                            @if (j == 0)
+                            {
+                                color = iface.LastUpdatedOn.AddDays(1) < DateTime.UtcNow ? TableDanger : string.Empty;
+
+                                <td rowspan="@iface.IPAddresses.Count()" class="@color">@iface.LastUpdatedOn</td>
+                            }
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private const string TableDanger = "table-danger";
+    private const string TableWarning = "table-warning";
+    private const string TableSuccess = "table-success";
+    private IEnumerable<(string computerName, IEnumerable<Common.NetworkInterfaceIPModel> interafces)> computers;
+
+    private enum IPTypes
+    {
+        Normal,
+        Private,
+        LinkLocal,
+        CarrierGradeNAT,
+        Invalid,
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        computers = await Http.GetIPAsync();
+    }
+
+    [Parameter] public string Text { get; set; }
+
+    public ValueTask WriteTextAsync(string text)
+    {
+        return JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+    }
+
+    private readonly IPNetwork[] privateNetworks = {
+        new(IPAddress.Parse("10.0.0.0"), 8),
+        new(IPAddress.Parse("172.16.0.0"), 12),
+        new(IPAddress.Parse("192.168.0.0"), 16),
+        new(IPAddress.Parse("fd00::"), 8),
+    };
+
+    private readonly IPNetwork[] linkLocalNetworks = {
+        new(IPAddress.Parse("169.254.0.0"), 16),
+    };
+
+    private readonly IPNetwork[] cgnNetworks = {
+        new(IPAddress.Parse("100.64.0.0"), 10),
+    };
+
+    private IPTypes getAddressType(IPAddress address)
+    {
+        // if is IPv4
+        if (address.IsIPv4MappedToIPv6 || address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            address = address.MapToIPv4();
+
+        if (address.IsIPv6LinkLocal || linkLocalNetworks.Any(linkLocalNetwork => linkLocalNetwork.Contains(address)))
+            return IPTypes.LinkLocal;
+
+        if (privateNetworks.Any(privateNetwork => privateNetwork.Contains(address)))
+            return IPTypes.Private;
+
+        if (IPAddress.IsLoopback(address) || address.Equals(IPAddress.IPv6None) || address.IsIPv6Multicast)
+            return IPTypes.Invalid;
+
+        if (cgnNetworks.Any(cgnNetwork => cgnNetwork.Contains(address)))
+            return IPTypes.CarrierGradeNAT;
+
+        return IPTypes.Normal;
+    }
+}

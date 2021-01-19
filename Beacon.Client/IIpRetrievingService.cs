@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Beacon.Common;
 
 namespace Beacon.Client
 {
-    public interface IIpRetrievingService
+    public interface IIPRetrievingService
     {
-        public event Action<IList<NicIpInfo>> IpAddressChanged;
+        public event Action<IList<NetworkInterfaceIPModel>> IPAddressChanged;
 
-        public IList<NicIpInfo> GetIpForAllInterfaces();
+        public IList<NetworkInterfaceIPModel> GetIpForAllInterfaces();
     }
 }

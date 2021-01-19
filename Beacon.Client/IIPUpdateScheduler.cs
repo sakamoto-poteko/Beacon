@@ -1,6 +1,6 @@
 ﻿namespace Beacon.Client
 {
-    public interface IIpUploadingScheduler
+    public interface IIPUpdateScheduler
     {
         void CreateJob();
 

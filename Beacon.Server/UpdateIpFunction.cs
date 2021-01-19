@@ -34,11 +34,11 @@ namespace Beacon.Server
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-            UpdateIpRequestModel model;
+            UpdateIPRequestModel model;
 
             try
             {
-                model = JsonConvert.DeserializeObject<UpdateIpRequestModel>(requestBody);
+                model = JsonConvert.DeserializeObject<UpdateIPRequestModel>(requestBody);
             }
             catch (JsonException)
             {

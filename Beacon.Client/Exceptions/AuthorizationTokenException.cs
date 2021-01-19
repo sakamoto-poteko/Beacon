@@ -5,7 +5,7 @@ using Microsoft.Identity.Client;
 namespace Beacon.Client.Exceptions
 {
     [Serializable]
-    internal class AuthorizationTokenException : Exception
+    public class AuthorizationTokenException : Exception
     {
         private MsalException exception;
 

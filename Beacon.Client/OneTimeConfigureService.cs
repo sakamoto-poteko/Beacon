@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Beacon.Common;
 using Microsoft.Extensions.Hosting;
 
 namespace Beacon.Client
 {
     public class OneTimeConfigureService : IHostedService
     {
-        private readonly IIpUploadingScheduler ipUploadingScheduler;
-        private readonly IIpRetrievingService ipRetrievingService;
-        private readonly Action<IList<NicIpInfo>> ipAddressChangeHandler;
+        private readonly IIPUpdateScheduler ipUploadingScheduler;
+        private readonly IIPRetrievingService ipRetrievingService;
+        private readonly Action<IList<NetworkInterfaceIPModel>> ipAddressChangeHandler;
 
-        public OneTimeConfigureService(IIpUploadingScheduler ipUploadingScheduler, IIpRetrievingService ipRetrievingService)
+        public OneTimeConfigureService(IIPUpdateScheduler ipUploadingScheduler, IIPRetrievingService ipRetrievingService)
         {
             this.ipUploadingScheduler = ipUploadingScheduler;
             this.ipRetrievingService = ipRetrievingService;
@@ -25,14 +26,14 @@ namespace Beacon.Client
             ipUploadingScheduler.SetSchedule("0 0 * * * ?"); // every hour
             ipUploadingScheduler.TriggerNow();
 
-            ipRetrievingService.IpAddressChanged += ipAddressChangeHandler;
+            ipRetrievingService.IPAddressChanged += ipAddressChangeHandler;
 
             return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            ipRetrievingService.IpAddressChanged -= ipAddressChangeHandler;
+            ipRetrievingService.IPAddressChanged -= ipAddressChangeHandler;
             ipUploadingScheduler.Unschedule();
             return Task.CompletedTask;
         }
