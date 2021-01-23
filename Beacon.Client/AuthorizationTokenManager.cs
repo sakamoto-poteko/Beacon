@@ -16,7 +16,7 @@ namespace Beacon.Client
             this.publicClientApplication = publicClientApplication;
         }
 
-        public bool AllowInteractiveLogin { get; set; }
+        public bool AllowInteractiveLogin { get; set; } = true;
 
         public IEnumerable<string> Scopes => scopes;
 
