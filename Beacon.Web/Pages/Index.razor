@@ -84,7 +84,7 @@ else
                             {
                                 color = iface.LastUpdatedOn.AddDays(1) < DateTime.UtcNow ? TableDanger : string.Empty;
 
-                                <td rowspan="@iface.IPAddresses.Count()" class="@color">@iface.LastUpdatedOn</td>
+                                <td rowspan="@iface.IPAddresses.Count()" class="@color">@iface.LastUpdatedOn.ToLocalTime()</td>
                             }
                         </tr>
                     }
@@ -111,7 +111,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        computers = await Http.GetIPAsync();
+        var allComputers = await Http.GetIPAsync();
+        computers = allComputers
+            .Select(c => (c.computerName, c.interafces.Where(i => i.LastUpdatedOn.AddDays(7) > DateTime.UtcNow)))
+            .ToList();
     }
 
     [Parameter] public string Text { get; set; }
